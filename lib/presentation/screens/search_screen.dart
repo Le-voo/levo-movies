@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../data/models/movie.dart';
 import '../../state/movie_state.dart';
 import '../../state/search_provider.dart';
+import '../widgets/glass_container.dart';
 import '../widgets/rating_badge.dart';
 import '../widgets/state_views.dart';
 import 'movie_detail_screen.dart';
@@ -27,6 +28,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     'The Dark Knight',
     'Spider-Man',
     'Dune',
+    'Gladiator',
   ];
 
   @override
@@ -47,105 +49,147 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchMoviesProvider);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
-        title: TextField(
-          controller: _searchController,
-          focusNode: _focusNode,
-          autofocus: true,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: 'Search movies by title...',
-            prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 20),
-                    onPressed: () {
-                      _searchController.clear();
-                      ref.read(searchMoviesProvider.notifier).clear();
-                      setState(() {});
-                    },
-                  )
-                : null,
-            filled: true,
-            fillColor: isDark
-                ? AppColors.darkSurfaceVariant
-                : AppColors.lightSurfaceVariant,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: GlassContainer(
+            blur: 20,
+            borderRadius: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: TextField(
+              controller: _searchController,
+              focusNode: _focusNode,
+              autofocus: true,
+              style: TextStyle(
+                color: isDark ? AppColors.darkTextPrimary : const Color(0xFF0F172A),
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'Search movies by title...',
+                hintStyle: TextStyle(
+                  color: isDark
+                      ? AppColors.darkTextMuted
+                      : const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primaryGold,
+                  size: 22,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.cancel_rounded, size: 20),
+                        color: isDark ? AppColors.darkTextSecondary : const Color(0xFF64748B),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(searchMoviesProvider.notifier).clear();
+                          setState(() {});
+                        },
+                      )
+                    : null,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              onChanged: (query) {
+                setState(() {});
+                ref.read(searchMoviesProvider.notifier).onQueryChanged(query);
+              },
             ),
           ),
-          onChanged: (query) {
-            setState(() {});
-            ref.read(searchMoviesProvider.notifier).onQueryChanged(query);
-          },
         ),
-        actions: const [SizedBox(width: 12)],
       ),
       body: SafeArea(
         child: switch (searchState) {
-          MovieInitial<List<Movie>>() => _buildInitialState(context),
+          MovieInitial<List<Movie>>() => _buildInitialState(context, isDark),
           MovieLoading<List<Movie>>() => _buildLoadingList(),
-          MovieLoaded<List<Movie>>(:final data) => _buildResultsList(
-            context,
-            data,
-          ),
+          MovieLoaded<List<Movie>>(:final data) => _buildResultsList(context, data, isDark),
           MovieEmpty<List<Movie>>(:final message) => EmptyStateView(
-            icon: Icons.search_off_rounded,
-            title: 'No Movies Found',
-            message: message,
-          ),
+              icon: Icons.search_off_rounded,
+              title: 'No Movies Found',
+              message: message,
+            ),
           MovieError<List<Movie>>(:final message) => ErrorStateView(
-            message: message,
-            onRetry: () => ref.read(searchMoviesProvider.notifier).retry(),
-          ),
+              message: message,
+              onRetry: () => ref.read(searchMoviesProvider.notifier).retry(),
+            ),
         },
       ),
     );
   }
 
-  Widget _buildInitialState(BuildContext context) {
+  Widget _buildInitialState(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.trending_up_rounded,
-                color: theme.colorScheme.primary,
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGold.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.trending_up_rounded,
+                  color: AppColors.primaryGold,
+                  size: 18,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 'Popular Searches',
                 style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: isDark ? AppColors.darkTextPrimary : const Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+          // Glassy, High-Contrast Suggestion Chips
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 10,
+            runSpacing: 10,
             children: _suggestedQueries.map((query) {
-              return ActionChip(
-                label: Text(query),
-                avatar: const Icon(Icons.search_rounded, size: 16),
-                onPressed: () {
+              return GlassContainer(
+                blur: 16,
+                borderRadius: 24,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                color: isDark
+                    ? const Color(0xFF1E293B).withValues(alpha: 0.65)
+                    : const Color(0xFFFFFFFF).withValues(alpha: 0.85),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.18)
+                      : const Color(0xFFCBD5E1),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                onTap: () {
                   _searchController.text = query;
                   _searchController.selection = TextSelection.fromPosition(
                     TextPosition(offset: query.length),
@@ -153,28 +197,65 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ref.read(searchMoviesProvider.notifier).onQueryChanged(query);
                   setState(() {});
                 },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.search_rounded,
+                      size: 16,
+                      color: AppColors.primaryGold,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      query,
+                      style: TextStyle(
+                        // High-contrast, crystal-clear typography
+                        color: isDark
+                            ? const Color(0xFFF8FAFC)
+                            : const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
+                ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 52),
           Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.movie_creation_outlined,
-                  size: 64,
-                  color: theme.textTheme.bodySmall?.color?.withValues(
-                    alpha: 0.3,
+            child: GlassContainer(
+              blur: 16,
+              borderRadius: 24,
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.movie_creation_outlined,
+                    size: 56,
+                    color: AppColors.primaryGold.withValues(alpha: 0.7),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Search millions of movies on TMDB',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodySmall?.color,
+                  const SizedBox(height: 14),
+                  Text(
+                    'Explore Millions of Movies',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isDark ? AppColors.darkTextPrimary : const Color(0xFF0F172A),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    'Type any movie title, franchise, or actor above.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.darkTextSecondary : const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -188,10 +269,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       itemCount: 5,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: const Row(
+        return const GlassContainer(
+          blur: 12,
+          borderRadius: 16,
+          padding: EdgeInsets.all(12),
+          child: Row(
             children: [
               ShimmerBox(width: 80, height: 110, borderRadius: 12),
               SizedBox(width: 16),
@@ -203,11 +285,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     SizedBox(height: 8),
                     ShimmerBox(width: 80, height: 12, borderRadius: 4),
                     SizedBox(height: 12),
-                    ShimmerBox(
-                      width: double.infinity,
-                      height: 12,
-                      borderRadius: 4,
-                    ),
+                    ShimmerBox(width: double.infinity, height: 12, borderRadius: 4),
                     SizedBox(height: 6),
                     ShimmerBox(width: 180, height: 12, borderRadius: 4),
                   ],
@@ -220,9 +298,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildResultsList(BuildContext context, List<Movie> movies) {
+  Widget _buildResultsList(
+    BuildContext context,
+    List<Movie> movies,
+    bool isDark,
+  ) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -230,123 +311,124 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final movie = movies[index];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          margin: EdgeInsets.zero,
-          elevation: isDark ? 3 : 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: isDark
-                  ? AppColors.darkSurfaceBorder
-                  : AppColors.lightSurfaceBorder,
-              width: 0.8,
-            ),
-          ),
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      MovieDetailScreen(movieId: movie.id, initialMovie: movie),
+        return GlassContainer(
+          blur: 16,
+          borderRadius: 20,
+          padding: const EdgeInsets.all(10),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => MovieDetailScreen(
+                  movieId: movie.id,
+                  initialMovie: movie,
                 ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Poster Thumbnail with Hero
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      width: 80,
-                      height: 115,
-                      child:
-                          movie.posterPath != null &&
-                              movie.posterPath!.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: movie.fullPosterUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const ShimmerBox(
-                                width: 80,
-                                height: 115,
-                                borderRadius: 10,
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: isDark
-                                    ? AppColors.darkSurfaceVariant
-                                    : AppColors.lightSurfaceVariant,
-                                child: const Icon(
-                                  Icons.movie_rounded,
-                                  color: AppColors.darkTextMuted,
-                                ),
-                              ),
-                            )
-                          : Container(
-                              color: isDark
-                                  ? AppColors.darkSurfaceVariant
-                                  : AppColors.lightSurfaceVariant,
-                              child: const Icon(
-                                Icons.movie_rounded,
-                                color: AppColors.darkTextMuted,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Metadata
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movie.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+              ),
+            );
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Poster Thumbnail with Hero
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 80,
+                  height: 115,
+                  child: movie.posterPath != null && movie.posterPath!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: movie.fullPosterUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const ShimmerBox(
+                            width: 80,
+                            height: 115,
+                            borderRadius: 12,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            RatingBadge(
-                              rating: movie.voteAverage,
-                              isCompact: true,
+                          errorWidget: (context, url, error) => Container(
+                            color: isDark
+                                ? AppColors.darkSurfaceVariant
+                                : AppColors.lightSurfaceVariant,
+                            child: const Icon(
+                              Icons.movie_rounded,
+                              color: AppColors.darkTextMuted,
                             ),
-                            const SizedBox(width: 10),
-                            Text(
-                              movie.releaseYear,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                          ),
+                        )
+                      : Container(
+                          color: isDark
+                              ? AppColors.darkSurfaceVariant
+                              : AppColors.lightSurfaceVariant,
+                          child: const Icon(
+                            Icons.movie_rounded,
+                            color: AppColors.darkTextMuted,
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Metadata
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : const Color(0xFF0F172A),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        RatingBadge(
+                          rating: movie.voteAverage,
+                          isCompact: true,
+                        ),
+                        const SizedBox(width: 10),
                         Text(
-                          movie.overview.isNotEmpty
-                              ? movie.overview
-                              : 'No overview available.',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            height: 1.3,
+                          movie.releaseYear,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : const Color(0xFF475569),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.darkTextMuted,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      movie.overview.isNotEmpty
+                          ? movie.overview
+                          : 'No overview available.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: isDark
+                            ? AppColors.darkTextMuted
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const Padding(
+                padding: EdgeInsets.only(top: 36, right: 4),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.primaryGold,
+                  size: 24,
+                ),
+              ),
+            ],
           ),
         );
       },

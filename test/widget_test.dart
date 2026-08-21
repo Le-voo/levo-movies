@@ -5,6 +5,7 @@ import 'package:movie_explorer/core/theme/app_theme.dart';
 import 'package:movie_explorer/core/theme/theme_provider.dart';
 import 'package:movie_explorer/data/models/movie.dart';
 import 'package:movie_explorer/presentation/screens/main_navigation_screen.dart';
+import 'package:movie_explorer/presentation/screens/splash_screen.dart';
 import 'package:movie_explorer/state/movie_state.dart';
 import 'package:movie_explorer/state/trending_provider.dart';
 import 'package:movie_explorer/state/watchlist_provider.dart';
@@ -82,8 +83,40 @@ void main() {
     // Verify app bar title and navigation destinations
     expect(find.text('Movie Explorer'), findsOneWidget);
     expect(find.text('Trending'), findsOneWidget);
-    expect(find.text('Search'), findsOneWidget);
-    expect(find.text('Watchlist'), findsOneWidget);
+    expect(find.byIcon(Icons.search_rounded), findsWidgets);
+    expect(find.byIcon(Icons.bookmark_outline_rounded), findsOneWidget);
     expect(find.text('Interstellar'), findsOneWidget);
   });
+
+  testWidgets('SplashScreen renders glowing title and logo', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final sharedPreferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          trendingMoviesProvider.overrideWith(
+            (ref) => MockTrendingMoviesNotifier(const MovieLoaded([])),
+          ),
+          watchlistProvider.overrideWith((ref) => MockWatchlistNotifier([])),
+        ],
+        child: const MaterialApp(
+          home: SplashScreen(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.text('Movie Explorer'), findsOneWidget);
+    expect(find.text('Discover • Track • Experience'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 700));
+  });
 }
+
+
+

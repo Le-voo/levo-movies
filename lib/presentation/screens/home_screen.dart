@@ -4,6 +4,7 @@ import '../../core/constants/app_colors.dart';
 import '../../data/models/movie.dart';
 import '../../state/movie_state.dart';
 import '../../state/trending_provider.dart';
+import '../widgets/glass_container.dart';
 import '../widgets/movie_grid_view.dart';
 import '../widgets/state_views.dart';
 import '../widgets/theme_switcher_sheet.dart';
@@ -21,48 +22,79 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [AppColors.primaryGold, AppColors.primaryGoldDark],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryGold.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.local_movies_rounded,
-                color: theme.colorScheme.primary,
-                size: 22,
+                color: Color(0xFF1E1B16),
+                size: 20,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Text(
               'Movie Explorer',
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w900,
                 letterSpacing: -0.5,
+                fontSize: 21,
               ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: 'Search Movies',
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: 'Change Theme',
-            icon: Icon(
-              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: GlassContainer(
+              blur: 16,
+              shape: BoxShape.circle,
+              padding: const EdgeInsets.all(4),
+              child: IconButton(
+                tooltip: 'Search Movies',
+                icon: const Icon(Icons.search_rounded, size: 20),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SearchScreen(),
+                    ),
+                  );
+                },
+              ),
             ),
-            onPressed: () => ThemeSwitcherSheet.show(context),
           ),
-          const SizedBox(width: 4),
+          Padding(
+            padding: const EdgeInsets.only(right: 14, left: 4),
+            child: GlassContainer(
+              blur: 16,
+              shape: BoxShape.circle,
+              padding: const EdgeInsets.all(4),
+              child: IconButton(
+                tooltip: 'Change Theme',
+                icon: Icon(
+                  isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  size: 20,
+                  color: AppColors.primaryGold,
+                ),
+                onPressed: () => ThemeSwitcherSheet.show(context),
+              ),
+            ),
+          ),
         ],
       ),
       body: SafeArea(
@@ -70,10 +102,13 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Quick Search SearchBar Entrypoint
+            // Frosted Glass Search Bar Trigger
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: InkWell(
+              child: GlassContainer(
+                blur: 20,
+                borderRadius: 20,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -81,47 +116,32 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkSurfaceVariant
-                        : AppColors.lightSurfaceVariant,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.darkSurfaceBorder
-                          : AppColors.lightSurfaceBorder,
-                      width: 0.8,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.search_rounded,
+                      color: AppColors.primaryGold,
+                      size: 20,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.search_rounded,
-                        color: theme.textTheme.bodySmall?.color,
-                        size: 20,
+                    const SizedBox(width: 12),
+                    Text(
+                      'Search movies, franchises, genres...',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Search movies, actors, titles...',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.textTheme.bodySmall?.color,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
 
-            // Horizontal Category Selector Chips
+            // Horizontal Glass Category Selector Pills
             SizedBox(
-              height: 42,
+              height: 44,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
@@ -130,44 +150,72 @@ class HomeScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final category = TrendingCategory.values[index];
                   final isSelected = category == selectedCategory;
-                  return ChoiceChip(
-                    label: Text(category.label),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        ref.read(trendingCategoryProvider.notifier).state =
-                            category;
-                      }
+
+                  return GlassContainer(
+                    blur: 16,
+                    borderRadius: 22,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: isSelected
+                        ? AppColors.primaryGold.withValues(alpha: isDark ? 0.3 : 0.22)
+                        : (isDark
+                            ? const Color(0xFF1E293B).withValues(alpha: 0.45)
+                            : Colors.white.withValues(alpha: 0.6)),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primaryGold
+                          : (isDark
+                              ? Colors.white.withValues(alpha: 0.12)
+                              : Colors.white.withValues(alpha: 0.8)),
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    onTap: () {
+                      ref.read(trendingCategoryProvider.notifier).state = category;
                     },
+                    child: Center(
+                      child: Text(
+                        category.label,
+                        style: TextStyle(
+                          color: isSelected
+                              ? (isDark ? AppColors.primaryGold : AppColors.primaryGoldDark)
+                              : (isDark
+                                  ? AppColors.darkTextSecondary
+                                  : const Color(0xFF334155)),
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             // Movies Content with Sealed State Handling
             Expanded(
               child: switch (trendingState) {
                 MovieInitial<List<Movie>>() ||
-                MovieLoading<List<Movie>>() => const LoadingShimmerGrid(),
+                MovieLoading<List<Movie>>() =>
+                  const LoadingShimmerGrid(),
                 MovieLoaded<List<Movie>>(:final data) => MovieGridView(
-                  movies: data,
-                  onRefresh: () =>
-                      ref.read(trendingMoviesProvider.notifier).refresh(),
-                ),
+                    movies: data,
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 90), // Bottom padding for floating nav
+                    onRefresh: () =>
+                        ref.read(trendingMoviesProvider.notifier).refresh(),
+                  ),
                 MovieEmpty<List<Movie>>(:final message) => EmptyStateView(
-                  title: 'No Movies Found',
-                  message: message,
-                  buttonLabel: 'Refresh',
-                  onButtonPressed: () =>
-                      ref.read(trendingMoviesProvider.notifier).refresh(),
-                ),
+                    title: 'No Movies Found',
+                    message: message,
+                    buttonLabel: 'Refresh',
+                    onButtonPressed: () =>
+                        ref.read(trendingMoviesProvider.notifier).refresh(),
+                  ),
                 MovieError<List<Movie>>(:final message) => ErrorStateView(
-                  message: message,
-                  onRetry: () =>
-                      ref.read(trendingMoviesProvider.notifier).refresh(),
-                ),
+                    message: message,
+                    onRetry: () =>
+                        ref.read(trendingMoviesProvider.notifier).refresh(),
+                  ),
               },
             ),
           ],
