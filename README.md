@@ -1,6 +1,7 @@
 # 🎬 Movie Explorer — Production Flutter Application
 
 [![Download Android APK](https://img.shields.io/badge/Download-Android%20APK-22c55e?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Le-voo/levo-movies/raw/main/releases/app-release.apk)
+[![Google Drive Mirror](https://img.shields.io/badge/Google%20Drive-APK%20Mirror-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1vDi9GSxhpeNrOX4FfhCeZ6HzNmAoK2gs/view?usp=drive_link)
 [![Flutter](https://img.shields.io/badge/Flutter-3.41%2B-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.11%2B-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-amber?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -9,11 +10,12 @@ A modern, production-grade 3-screen (+ offline Watchlist) movie exploration app 
 
 ---
 
-## 📥 Direct APK Download
+## 📥 APK Download Links
 
-You can download and install the ready-to-run release APK on any Android phone:
+You can download and install the ready-to-run release APK on any Android device using either link below:
 
-👉 **[Download Movie Explorer APK (v1.0.0)](https://github.com/Le-voo/levo-movies/raw/main/releases/app-release.apk)**
+- 🚀 **[Direct GitHub Download (v1.0.0)](https://github.com/Le-voo/levo-movies/raw/main/releases/app-release.apk)**
+- ☁️ **[Google Drive Mirror Download](https://drive.google.com/file/d/1vDi9GSxhpeNrOX4FfhCeZ6HzNmAoK2gs/view?usp=drive_link)**
 
 ---
 
