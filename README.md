@@ -1,16 +1,31 @@
 # 🎬 Movie Explorer — Production Flutter Application
 
+[![Download Android APK](https://img.shields.io/badge/Download-Android%20APK-22c55e?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Le-voo/levo-movies/raw/main/releases/app-release.apk)
+[![Flutter](https://img.shields.io/badge/Flutter-3.41%2B-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.11%2B-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-amber?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
 A modern, production-grade 3-screen (+ offline Watchlist) movie exploration app built with **Flutter 3.41+**, **Dart 3.11+**, **Riverpod**, and the **TMDB (The Movie Database) API**.
+
+---
+
+## 📥 Direct APK Download
+
+You can download and install the ready-to-run release APK on any Android phone:
+
+👉 **[Download Movie Explorer APK (v1.0.0)](https://github.com/Le-voo/levo-movies/raw/main/releases/app-release.apk)**
 
 ---
 
 ## 🌟 Key Features
 
 - 🍿 **Trending & Discovery**: Browse trending movies (Today, This Week), top rated titles, and now playing in cinemas with a responsive `GridView.builder` poster layout.
-- 🔍 **Debounced Live Search**: Search millions of movies with a 450ms debounce mechanism, search suggestions, and a dynamic `ListView.builder` result set.
+- 🔍 **Debounced Live Search**: Search millions of movies with a 450ms debounce mechanism, high-contrast search suggestion pills, and a dynamic `ListView.builder` result set.
+- 🎬 **Animated Splash Screen**: Cinematic glowing film reel logo with smooth entrance animation and tagline.
+- 🪟 **iOS 26 Frosted Glassmorphism**: Translucent floating bottom navigation bar, frosted cards, and specular highlight borders with real-time Gaussian blur.
 - 📖 **Cinematic Movie Details**: Collapsing `SliverAppBar` with high-resolution backdrop, overlapping poster hero animation, genre tags, storyline overview, ratings badge, runtime, and box-office stats.
 - 💾 **100% Offline Watchlist (SQLite)**: Save and manage movies locally using **sqflite** database. Saved movies remain accessible even without an active internet connection.
-- 🎨 **Material 3 Cinematic Theming**: Custom deep slate/midnight color scheme with rich amber/gold accents. Live switching between **Dark**, **Light**, and **System** themes with persistent preferences.
+- 🎨 **Material 3 Theming**: Custom deep slate/midnight color scheme with rich amber/gold accents. Live switching between **Dark**, **Light**, and **System** themes with persistent preferences.
 - 🛡️ **Sealed State Architecture**: Explicit UI state handling using Dart 3 sealed class `MovieState<T>` (`Initial`, `Loading`, `Loaded`, `Empty`, `Error`) with actionable retry states.
 - 📱 **Notch & Dynamic Island Ready**: Strict `SafeArea` wrapping and `MediaQuery.padding` awareness.
 - 🧹 **Zero Memory Leaks**: Explicit initialization and lifecycle disposal of all `AnimationController`, `ScrollController`, `TextEditingController`, and focus nodes.
@@ -70,12 +85,14 @@ lib/
 │   └── watchlist_provider.dart      # Reactive SQLite watchlist state
 ├── presentation/
 │   ├── screens/
-│   │   ├── main_navigation_screen.dart # Bottom Navigation bar container
+│   │   ├── splash_screen.dart          # Animated glowing splash screen
+│   │   ├── main_navigation_screen.dart # Floating frosted glass Navigation Bar
 │   │   ├── home_screen.dart            # Trending grid with category filters
 │   │   ├── search_screen.dart          # Search bar with suggestions & results
 │   │   ├── movie_detail_screen.dart    # Collapsing backdrop detail view
 │   │   └── watchlist_screen.dart       # Offline saved movies with swipe-to-delete
 │   └── widgets/
+│       ├── glass_container.dart     # Reusable iOS frosted glass container
 │       ├── movie_card.dart          # Poster card with hero & shimmer
 │       ├── movie_grid_view.dart     # Responsive GridView.builder
 │       ├── rating_badge.dart        # Color-coded circular/pill score badge
@@ -120,9 +137,19 @@ flutter pub get
 ```bash
 # Run on connected device, emulator, or desktop
 flutter run
+
+# Or run directly on specific platforms:
+flutter run -d windows
+flutter run -d chrome
 ```
 
-### 6. Run Static Analysis & Tests
+### 6. Build Release APK
+```bash
+flutter build apk --release
+```
+The generated APK will be at `build/app/outputs/flutter-apk/app-release.apk` (and in `releases/app-release.apk`).
+
+### 7. Run Static Analysis & Tests
 ```bash
 # Run analyzer (0 warnings)
 flutter analyze
@@ -137,7 +164,7 @@ flutter test
 
 The codebase includes automated unit and widget smoke tests in `test/`:
 - `test/unit_test.dart`: Validates JSON and SQLite serialization for `Movie`, `MovieDetail`, `Genre`, formatters, and sealed state transitions.
-- `test/widget_test.dart`: Validates smoke rendering of `MainNavigationScreen`, custom themes, and Riverpod provider mocking.
+- `test/widget_test.dart`: Validates smoke rendering of `SplashScreen`, `MainNavigationScreen`, custom themes, and Riverpod provider mocking.
 
 ---
 

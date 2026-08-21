@@ -8,19 +8,20 @@ import '../../data/models/movie.dart';
 class AppDatabase {
   static final AppDatabase instance = AppDatabase._init();
   static Database? _database;
+  final List<Movie> _webFallbackWatchlist = [];
 
   AppDatabase._init();
 
   static const String tableWatchlist = 'watchlist';
 
-  Future<Database> get database async {
+  Future<Database?> get database async {
+    if (kIsWeb) return null;
     if (_database != null) return _database!;
     _database = await _initDB('movie_explorer.db');
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
-    // Enable FFI for desktop (Windows, macOS, Linux)
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       sqfliteFfiInit();
@@ -59,7 +60,13 @@ class AppDatabase {
   }
 
   Future<int> insertToWatchlist(Movie movie) async {
+    if (kIsWeb) {
+      _webFallbackWatchlist.removeWhere((m) => m.id == movie.id);
+      _webFallbackWatchlist.insert(0, movie);
+      return movie.id;
+    }
     final db = await instance.database;
+    if (db == null) return 0;
     return await db.insert(
       tableWatchlist,
       movie.toMap(),
@@ -68,7 +75,12 @@ class AppDatabase {
   }
 
   Future<int> removeFromWatchlist(int movieId) async {
+    if (kIsWeb) {
+      _webFallbackWatchlist.removeWhere((m) => m.id == movieId);
+      return 1;
+    }
     final db = await instance.database;
+    if (db == null) return 0;
     return await db.delete(
       tableWatchlist,
       where: 'id = ?',
@@ -77,7 +89,11 @@ class AppDatabase {
   }
 
   Future<bool> isMovieInWatchlist(int movieId) async {
+    if (kIsWeb) {
+      return _webFallbackWatchlist.any((m) => m.id == movieId);
+    }
     final db = await instance.database;
+    if (db == null) return false;
     final maps = await db.query(
       tableWatchlist,
       columns: ['id'],
@@ -89,7 +105,11 @@ class AppDatabase {
   }
 
   Future<List<Movie>> getWatchlist() async {
+    if (kIsWeb) {
+      return List.unmodifiable(_webFallbackWatchlist);
+    }
     final db = await instance.database;
+    if (db == null) return [];
     final result = await db.query(tableWatchlist, orderBy: 'added_at DESC');
     return result.map((map) => Movie.fromMap(map)).toList();
   }
